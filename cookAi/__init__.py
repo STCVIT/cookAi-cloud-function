@@ -1,12 +1,33 @@
 import azure.functions as func
 import pandas as pd
-import numpy as np
 import fuzzywuzzy.fuzz as fuzz
-import json
 import os
+import json
 
 
 def CookMan(df,user_ingredients):
+    
+    class Recipe: 
+   
+ 
+        def __init__(self, title,ing,time,missing,imgurl,cuisine,instructions): 
+            self.title = title 
+            self.ingredients=ing
+            self.time=time
+            self.missing=missing
+            self.imgurl=imgurl 
+            self.cuisine=cuisine
+            self.instructions=instructions            
+        def dump(self):
+            return {"RecipeList": {'title': self.title,
+                               'ingredients': self.ingredients,
+                               'time': self.time,
+                               'missing': self.missing,
+                               'imgurl':self.imgurl,
+                               'cuisine':self.cuisine,
+                               'instructions':self.instructions }}
+
+
     def Cook2(Pingredients):    
         "Comparing the Recipe Ingredients and User Ingredients and decreasing count value for each Recipe ingredient missing.\
         Count describes the no. of ingredients missing from user ingredients to make that recipe."
@@ -14,8 +35,8 @@ def CookMan(df,user_ingredients):
         ulcount=0
         for i in set(Pingredients.split(",")):
             for j in  user_ingredients.split(","):
-                if i==j:               
-                    flag=1 
+                if i==j.strip():               
+                    flag=1
                     ulcount=1
                     break
             if (flag==0):
@@ -34,7 +55,7 @@ def CookMan(df,user_ingredients):
         ullcount=0
         for i in set(Pingredients.split(",")):
             for j in  user_ingredients.split(","):
-                if fuzz.token_set_ratio(i,j)>80:                 
+                if fuzz.token_set_ratio(i,j.strip())>80:                 
                     flag=1 
                     break
             if (flag==0):
@@ -44,9 +65,11 @@ def CookMan(df,user_ingredients):
         if(ullcount==0):
             return count-1
         else:
-            return count
+            return count        
+    
+    
     df["flag"]=df["P-Ingredients"].apply(Cook2)  
-    df=df.sort_values(by="flag",ascending=False).head(30)
+    df=df.sort_values(by="flag",ascending=False).head(100)
     df["flag2"]=df["P-Ingredients"].apply(MainCook)
     df=df.sort_values(by="flag2",ascending=False)
 
@@ -55,7 +78,7 @@ def CookMan(df,user_ingredients):
         miss=""
         for i in set(Pingredients.split(",")):
             for j in  user_ingredients.split(","):
-                if fuzz.token_set_ratio(i,j)>80:                    
+                if fuzz.token_set_ratio(i,j.strip())>80:                    
                     flag=1 
                     break
             if (flag==0):
@@ -66,8 +89,22 @@ def CookMan(df,user_ingredients):
         miss = miss[:-1]
         return miss
     df["Missing"]=df["P-Ingredients"].apply(Missing)
-    df.drop(columns=["flag2","flag","P-Ingredients"],inplace=True)
-    return df
+    df.drop(columns=["flag2","flag","P-Ingredients","URL"],inplace=True)
+    df.reset_index(inplace=True,drop=True)
+    Cookdf=df.head(30)
+    mylist=[]
+    for i in range(5):
+        title = Cookdf.loc[i,"TranslatedRecipeName"]
+        ing=Cookdf.loc[i,"TranslatedIngredients"]
+        time=int(Cookdf.loc[i,"TotalTimeInMins"])
+        missing=Cookdf.loc[i,"Missing"]
+        imgurl = Cookdf.loc[i,"image-url"]
+        cuisine=Cookdf.loc[i,"Cuisine"]
+        instructions=Cookdf.loc[i,"TranslatedInstructions"]
+        mylist.append(Recipe(title,ing,time,missing,imgurl,cuisine,instructions))        
+    dfjson=json.dumps([o.dump() for o in mylist])
+    return dfjson
+
 
 def main(req: func.HttpRequest):
     
@@ -82,7 +119,6 @@ def main(req: func.HttpRequest):
     df.reset_index(drop=True, inplace=True)
     req_body = req.get_json()
     user_ingredients=req_body.get('foodItems')
-    Cookdf=CookMan(df,user_ingredients)
-    result = Cookdf.to_json(orient="split")
+    result=CookMan(df,user_ingredients)
     parsed = json.loads(result)
     return func.HttpResponse(json.dumps(parsed, indent=2))
