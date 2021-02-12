@@ -107,12 +107,9 @@ def CookMan(df,user_ingredients):
 
 
 def main(req: func.HttpRequest):
-    
     trial = req.params.get('trial')
     if trial == "yes":
         return func.HttpResponse("function runs")
-    # else:
-    #     return func.HttpResponse("function still runs bitch")
     df=pd.read_csv(os.path.join("df-en-final.csv"))
     df["Ingredient-count"]=df["P-Ingredients"].apply(lambda x:len(x.split(",")))
     df=df[df["Ingredient-count"]>4]
