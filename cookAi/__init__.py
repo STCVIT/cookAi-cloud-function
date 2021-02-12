@@ -19,13 +19,13 @@ def CookMan(df,user_ingredients):
             self.cuisine=cuisine
             self.instructions=instructions            
         def dump(self):
-            return {"RecipeList": {'title': self.title,
-                               'ingredients': self.ingredients,
-                               'time': self.time,
+            return {'title': self.title,
+                               'ingredients': self.ingredients,                               
                                'missing': self.missing,
+                               'time': self.time,
                                'imgurl':self.imgurl,
                                'cuisine':self.cuisine,
-                               'instructions':self.instructions }}
+                               'instructions':self.instructions }
 
 
     def Cook2(Pingredients):    
