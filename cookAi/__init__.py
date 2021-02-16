@@ -28,7 +28,7 @@ def MasterCook(df,user_ingredients):
                                'instructions':self.instructions }
     def csvtojson(dff):
         mylist=[]
-        for i in range(5):
+        for i in range(30):
             title = dff.loc[i,"TranslatedRecipeName"]
             ing=dff.loc[i,"TranslatedIngredients"]
             time=int(dff.loc[i,"TotalTimeInMins"])
@@ -129,13 +129,14 @@ def MasterCook(df,user_ingredients):
         Cookdf=df.head(30)
         return Cookdf
     dff=CookMan(df,user_ingredients)
-
+    dff.reset_index(inplace=True,drop=True)
     if dff.loc[0,"flag2"] <-5:
         toadd=["milk","wheat","rice"]
         for i in toadd:
             if i not in set(user_ingredients.split(",")):
                 user_ingredients+=",{}".format(str(i))
         dff=CookMan(df,user_ingredients)
+        dff.reset_index(inplace=True,drop=True)
         jsondf=csvtojson(dff)
         return jsondf
     else:
