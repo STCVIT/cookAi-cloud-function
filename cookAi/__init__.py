@@ -147,7 +147,7 @@ def main(req: func.HttpRequest):
     
     trial = req.params.get('trial')
     if trial == "yes":
-        return func.HttpResponse("function runs")
+        return func.HttpResponse("function runs even in CD")
     # else:
     #     return func.HttpResponse("function still runs bitch")
     df=pd.read_csv(os.path.join("df-en-final.csv"))
