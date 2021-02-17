@@ -151,9 +151,6 @@ def main(req: func.HttpRequest):
     # else:
     #     return func.HttpResponse("function still runs bitch")
     df=pd.read_csv(os.path.join("df-en-final.csv"))
-    df["Ingredient-count"]=df["P-Ingredients"].apply(lambda x:len(x.split(",")))
-    df=df[df["Ingredient-count"]>4]
-    df.reset_index(drop=True, inplace=True)
     req_body = req.get_json()
     user_ingredients=req_body.get('foodItems')
     result=MasterCook(df,user_ingredients)
