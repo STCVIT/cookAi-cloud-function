@@ -88,7 +88,7 @@ def MasterCook(df,user_ingredients):
             for i in text.split(","):
                 for j in entered.split(","):
                     if j in i:
-                        count=1
+                        count+=1
             return count
         df["flag"]=df["P-Ingredients"].apply(Cook2)  
         df=df.sort_values(by="flag",ascending=False).head(100)
